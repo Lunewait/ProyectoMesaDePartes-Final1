@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Nuevo Trámite</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5" style="max-width: 800px;">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h4 mb-0">Formulario de Registro de Trámite</h2>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">{{ form.nombre_completo.label_tag }} {{ form.nombre_completo }}</div>
+                    <div class="mb-3">{{ form.dni.label_tag }} {{ form.dni }}</div>
+                    <div class="mb-3">{{ form.email.label_tag }} {{ form.email }}</div>
+                    <hr>
+                    <div class="mb-3">{{ form.categoria.label_tag }} {{ form.categoria }}</div>
+                    <div class="mb-3">{{ form.tipo_tramite.label_tag }} {{ form.tipo_tramite }}</div>
+                    <div id="requisitos-box" class="p-3 mb-3 rounded" style="display: none; background-color: #eef2f5; border-left: 5px solid #0d6efd;"></div>
+                    <hr>
+                    <div class="mb-3">{{ form.mensaje.label_tag }} {{ form.mensaje }}</div>
+                    <div class="mb-3">{{ form.archivo_adjunto.label_tag }} {{ form.archivo_adjunto }}</div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Enviar Trámite</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoriaSelect = document.querySelector('#id_categoria');
+            const tipoTramiteSelect = document.querySelector('#id_tipo_tramite');
+            const requisitosBox = document.querySelector('#requisitos-box');
+
+            categoriaSelect.addEventListener('change', function() {
+                const categoriaId = this.value;
+                tipoTramiteSelect.innerHTML = '<option value="">---------</option>'; // Limpiar opciones
+                requisitosBox.style.display = 'none';
+
+                if (categoriaId) {
+                    // Cargar los tipos de trámite para la categoría seleccionada
+                    fetch(`/api/tipos-tramite/${categoriaId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.forEach(function(tipo) {
+                                const option = new Option(tipo.nombre_tramite, tipo.id);
+                                tipoTramiteSelect.add(option);
+                            });
+                        });
+                }
+            });
+
+            tipoTramiteSelect.addEventListener('change', function() {
+                const tramiteId = this.value;
+                if (tramiteId) {
+                    // Cargar los requisitos para el tipo de trámite seleccionado
+                    fetch(`/api/requisitos/${tramiteId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            requisitosBox.innerHTML = `<h6 class="fw-bold">Requisitos:</h6><p>${data.requisitos.replace(/\\n/g, '<br>')}</p>`;
+                            requisitosBox.style.display = 'block';
+                        });
+                } else {
+                    requisitosBox.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
