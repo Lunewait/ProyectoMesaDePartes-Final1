@@ -17,7 +17,7 @@ def crear_superuser(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('tramites', '0002_auto_...'),  # <-- Reemplaza '0002_auto_...' con el nombre de tu migración anterior
+        ('tramites', '0002_auto_20250709_0900'),  # <-- Reemplaza '0002_auto_...' con el nombre de tu migración anterior
     ]
 
     operations = [
