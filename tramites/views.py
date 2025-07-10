@@ -55,19 +55,28 @@ class CrearTramiteView(View):
         # pero ahora con el queryset de tipo_tramite ya cargado.
         return render(request, 'tramites/crear_tramite.html', {'form': form})
 # Vista para la página de consulta de trámites
+# En tramites/views.py
 class ConsultarTramiteView(View):
     def get(self, request):
+        # Muestra la página con el formulario de búsqueda
         return render(request, 'tramites/consultar_tramite.html')
 
     def post(self, request):
         codigo = request.POST.get('codigo_seguimiento')
-        try:
-            tramite = Tramite.objects.get(codigo_seguimiento__iexact=codigo)
-            return render(request, 'tramites/consultar_tramite.html', {'tramite': tramite})
-        except Tramite.DoesNotExist:
-            error = "No se encontró ningún trámite con ese código. Por favor, verifíquelo e intente de nuevo."
-            return render(request, 'tramites/consultar_tramite.html', {'error': error})
+        contexto = {} # Usaremos un diccionario para enviar los datos
 
+        try:
+            # Busca el trámite en la base de datos
+            tramite = Tramite.objects.get(codigo_seguimiento__iexact=codigo)
+            contexto['tramite'] = tramite
+            # Busca el historial asociado a ese trámite y lo ordena por fecha
+            historial = tramite.historial.all().order_by('fecha_cambio')
+            contexto['historial'] = historial
+        except Tramite.DoesNotExist:
+            # Si no lo encuentra, envía un mensaje de error
+            contexto['error'] = "No se encontró ningún trámite con ese código. Por favor, verifíquelo e intente de nuevo."
+
+        return render(request, 'tramites/consultar_tramite.html', contexto)
 
 # Vista para la página de éxito tras crear un trámite
 class TramiteExitoView(TemplateView):
